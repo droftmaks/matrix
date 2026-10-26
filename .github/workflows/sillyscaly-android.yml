@@ -1,0 +1,63 @@
+
+      - name: Configure Gradle cache
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+
+      - name: Apply separate application identity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('plugins/src/main/kotlin/config/BuildTimeConfig.kt')
+          source = path.read_text()
+          replacements = {
+              'const val APPLICATION_ID = "io.element.android.x"': 'const val APPLICATION_ID = "net.sillyscaly.chat"',
+              'const val APPLICATION_NAME = "Element X"': 'const val APPLICATION_NAME = "SillyScaly Chat"',
+              'val METADATA_HOST_REVERSED: String? = null': 'val METADATA_HOST_REVERSED: String? = "net.sillyscaly.chat"',
+          }
+          for old, new in replacements.items():
+              if source.count(old) != 1:
+                  raise SystemExit('Unexpected upstream source: ' + old)
+              source = source.replace(old, new, 1)
+          path.write_text(source)
+          Path('SILLYSCALY-STATUS.txt').write_text(
+              'Baseline build only. Custom pack picker/import are NOT implemented yet.\n'
+              'Upstream: element-hq/element-x-android\n'
+              'Commit: 4b62a99d925e5ecb051f635874bc47edc43b59e7\n'
+              'Debug application ID: net.sillyscaly.chat.debug\n'
+              'Signed with the upstream public DEBUG key; testing only.\n'
+          )
+          PY
+
+      - name: Build F-Droid debug APK
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleFDroidDebug --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee build-sillyscaly.log
+
+      - name: Save build log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: SillyScaly-build-log
+          path: build-sillyscaly.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Save APK
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: SillyScaly-Chat-baseline-APK
+          path: |
+            app/build/outputs/apk/fdroid/debug/*.apk
+            SILLYSCALY-STATUS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package corresponding source
+        run: |
+          git ls-files -z | tar --null -T - --ignore-failed-read -czf "$RUNNER_TEMP/SillyScaly-baseline-source.tar.gz"
+
+      - name: Save corresponding source
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: SillyScaly-Chat-baseline-source
+          path: ${{ runner.temp }}/SillyScaly-baseline-source.tar.gz
+          retention-days: 14
