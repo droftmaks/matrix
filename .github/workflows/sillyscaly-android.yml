@@ -1,4 +1,4 @@
-name: SillyScaly Android - baseline
+name: SillyScaly Android - custom reactions
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sillyscaly-android-baseline
+  group: sillyscaly-android-native
   cancel-in-progress: false
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
               source = source.replace(old, new, 1)
           path.write_text(source)
           Path('SILLYSCALY-STATUS.txt').write_text(
-              'Baseline build only. Custom pack picker/import are NOT implemented yet.\n'
+              'Custom reaction catalog and Telegram emoji import. Composer stickers/inline emoji picker not implemented yet.\n'
               'Upstream: element-hq/element-x-android\n'
               'Commit: 4b62a99d925e5ecb051f635874bc47edc43b59e7\n'
               'Debug application ID: net.sillyscaly.chat.debug\n'
@@ -59,10 +59,35 @@ jobs:
           )
           PY
 
-      - name: Build F-Droid debug APK
+      - name: Apply native custom reactions
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, json, zlib
+          from pathlib import Path
+          files = json.loads(zlib.decompress(base64.b64decode('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')))
+          for name, item in files.items():
+              path = Path(name)
+              if path.is_absolute() or '..' in path.parts:
+                  raise SystemExit('Unsafe source path')
+              if item['sha256'] is None:
+                  if path.exists(): raise SystemExit('Unexpected existing file: ' + name)
+              elif hashlib.sha256(path.read_bytes()).hexdigest() != item['sha256']:
+                  raise SystemExit('Upstream changed: ' + name)
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(item['content'])
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          needle = 'getByName("release") {'
+          assert s.count(needle) == 1
+          s = s.replace(needle, needle + '\n            applicationIdSuffix = ".debug"', 1)
+          s = s.replace('"$oAuthRedirectSchemeBase",', '"$oAuthRedirectSchemeBase.debug",', 1)
+          p.write_text(s)
+          PY
+
+      - name: Build optimized F-Droid APK
         run: |
           set -o pipefail
-          ./gradlew :app:assembleFDroidDebug --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee build-sillyscaly.log
+          ./gradlew :app:assembleFDroidRelease --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee build-sillyscaly.log
 
       - name: Save build log
         if: always()
@@ -76,20 +101,21 @@ jobs:
       - name: Save APK
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: SillyScaly-Chat-baseline-APK
+          name: SillyScaly-Chat-arm64-APK
           path: |
-            app/build/outputs/apk/fdroid/debug/*.apk
+            app/build/outputs/apk/fdroid/release/*arm64-v8a*.apk
             SILLYSCALY-STATUS.txt
           if-no-files-found: error
           retention-days: 14
 
       - name: Package corresponding source
         run: |
-          git ls-files -z | tar --null -T - --ignore-failed-read -czf "$RUNNER_TEMP/SillyScaly-baseline-source.tar.gz"
+          git add -N features/messages/impl
+          git ls-files -z | tar --null -T - --ignore-failed-read -czf "$RUNNER_TEMP/SillyScaly-native-source.tar.gz"
 
       - name: Save corresponding source
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: SillyScaly-Chat-baseline-source
-          path: ${{ runner.temp }}/SillyScaly-baseline-source.tar.gz
+          name: SillyScaly-Chat-native-source
+          path: ${{ runner.temp }}/SillyScaly-native-source.tar.gz
           retention-days: 14
