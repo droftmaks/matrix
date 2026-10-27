@@ -90,12 +90,12 @@ jobs:
       - name: Test emoji message encoding
         run: |
           set -o pipefail
-          ./gradlew :features:messages:impl:testReleaseUnitTest --tests 'io.element.android.features.messages.impl.customemoji.EmojiMessageTest' --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee build-sillyscaly.log
+          ./gradlew :features:messages:impl:testDebugUnitTest --tests 'io.element.android.features.messages.impl.customemoji.EmojiMessageTest' --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee build-sillyscaly.log
 
       - name: Test Matrix emoji HTML handling
         run: |
           set -o pipefail
-          ./gradlew :libraries:matrixui:testReleaseUnitTest --tests 'io.element.android.libraries.matrix.ui.messages.ToHtmlDocumentTest' --tests 'io.element.android.libraries.matrix.ui.messages.ToPlainTextTest' --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee -a build-sillyscaly.log
+          ./gradlew :libraries:matrixui:testDebugUnitTest --tests 'io.element.android.libraries.matrix.ui.messages.ToHtmlDocumentTest' --tests 'io.element.android.libraries.matrix.ui.messages.ToPlainTextTest' --no-daemon --max-workers=2 --stacktrace --no-configuration-cache 2>&1 | tee -a build-sillyscaly.log
 
       - name: Build optimized F-Droid APK
         run: |
